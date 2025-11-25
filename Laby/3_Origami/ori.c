@@ -55,11 +55,11 @@ long long solve(int id, double x, double y)
             /* Calculate the projection of the point on the line with dot product */
             /* and divide the length of this projection by dy_line to get proportion. */
             double proportion = dot(x - x1, y - y1, x2 - x1, y2 - y1) / (dx_line * dx_line + dy_line * dy_line);
-            /* Point (xs, ys) is the projection of the point (x, y) on the line. */
-            double xs = x1 + proportion * dx_line, ys = y1 + proportion * dy_line;
-            /* Point (xk, yk) is the reflection of (x, y) across the fold line */
-            double xk = x + 2 * (xs - x), yk = y + 2 * (ys - y);
-            return solve(papers[id].id, xk, yk) + solve(papers[id].id, x, y);
+            /* Point (x_projection, y_projection) is the projection of the point (x, y) about the line. */
+            double x_projection = x1 + proportion * dx_line, y_projection = y1 + proportion * dy_line;
+            /* Point (x_reflection, y_reflection) is the reflection of (x, y) about the fold line */
+            double x_reflection = x + 2 * (x_projection - x), y_reflection = y + 2 * (y_projection - y);
+            return solve(papers[id].id, x_reflection, y_reflection) + solve(papers[id].id, x, y);
         }
     }
 }
