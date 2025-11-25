@@ -4,8 +4,8 @@
 #define eps 1e-9
 
 /* type = 'P': Rectangle with lower left edge in x1, y1 and upper right edge in x2, y2 */
-/* type = 'K': Circle in x1, y1 with redius r */
-/* type = 'Z': Fold operation. Fols id-th paper along line (x1, y1), (x2, y2) */
+/* type = 'K': Circle in the point (x1, y1) with redius r */
+/* type = 'Z': Fold operation. Folds the id-th paper along line (x1, y1), (x2, y2) */
 typedef struct
 {
     int type, id;
