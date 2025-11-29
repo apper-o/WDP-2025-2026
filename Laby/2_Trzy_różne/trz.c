@@ -167,9 +167,7 @@ int main()
     pair *suff = (pair*)malloc((size_t)n * sizeof(pair)); 
     if(arr == NULL || pref == NULL || suff == NULL)
     {
-        free(arr);
-        free(pref);
-        free(suff);
+        printf("Error! Wrong memory allocation\n");
         return 1;
     }
     for(int i=0;i<n;i++)
