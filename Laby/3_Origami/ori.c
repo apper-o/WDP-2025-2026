@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define eps 1e-9
 
@@ -11,9 +12,6 @@ typedef struct
     int type, id;
     double x1, y1, x2, y2, r;
 } paper;
-
-/* Global array that represents all sheets of paper. */
-paper *papers;
 
 /* Returns the cross product of two vectors. */
 double cross(double x1, double y1, double x2, double y2)
@@ -27,7 +25,20 @@ double dot(double x1, double y1, double x2, double y2)
     return x1 * x2 + y1 * y2;
 }
 
-long long solve(int id, double x, double y)
+void get_reflection(double *x_res, double *y_res, double x, double y, double x1, double y1, double x2, double y2)
+{
+    double dx_line = x2 - x1, dy_line = y2 - y1;
+    /* Calculates the projection of the point on the line with a dot product */
+    /* and divides the length of this projection by dy_line to get proportion. */
+    double proportion = dot(x - x1, y - y1, x2 - x1, y2 - y1) / (dx_line * dx_line + dy_line * dy_line);
+    /* Point (x_projection, y_projection) is the projection of the point (x, y) about the line. */
+    double x_projection = x1 + proportion * dx_line, y_projection = y1 + proportion * dy_line;
+    /* Point (x_reflection, y_reflection) is the reflection of (x, y) about the fold line */
+    *x_res = x + 2 * (x_projection - x);
+    *y_res = y + 2 * (y_projection - y);
+}
+
+long long solve(paper *papers, int id, double x, double y)
 {
     if(papers[id].type == 'P') // Rectangle
     {
@@ -46,83 +57,61 @@ long long solve(int id, double x, double y)
         /* Cross product of the fold line vector and the vector from (x1, y1) to (x, y). */
         double cp = cross(x2 - x1, y2 - y1, x - x1, y - y1);
         if(-eps <= cp && cp <= eps) // Point on the line
-            return solve(papers[id].id, x, y);
+            return solve(papers, papers[id].id, x, y);
         else if(cp < 0) // Point on the right side
             return 0;
         else // Point on the left side
         {
-            double dx_line = x2 - x1, dy_line = y2 - y1;
-            /* Calculate the projection of the point on the line with dot product */
-            /* and divide the length of this projection by dy_line to get proportion. */
-            double proportion = dot(x - x1, y - y1, x2 - x1, y2 - y1) / (dx_line * dx_line + dy_line * dy_line);
-            /* Point (x_projection, y_projection) is the projection of the point (x, y) about the line. */
-            double x_projection = x1 + proportion * dx_line, y_projection = y1 + proportion * dy_line;
-            /* Point (x_reflection, y_reflection) is the reflection of (x, y) about the fold line */
-            double x_reflection = x + 2 * (x_projection - x), y_reflection = y + 2 * (y_projection - y);
-            return solve(papers[id].id, x_reflection, y_reflection) + solve(papers[id].id, x, y);
+            double x_reflection, y_reflection;
+            get_reflection(&x_reflection, &y_reflection, x, y, x1, y1, x2, y2);
+            return solve(papers, papers[id].id, x_reflection, y_reflection) + solve(papers, papers[id].id, x, y);
         }
+    }
+}
+
+void get_input(paper *papers, int n)
+{
+    for(int i=0;i<n;i++)
+    {
+        char type;
+        int input_type = scanf(" %c", &type);
+        assert(input_type == 1);
+        if(type == 'P')
+        {
+            int input_P = scanf("%lf %lf %lf %lf", &papers[i].x1, &papers[i].y1, &papers[i].x2, &papers[i].y2);
+            assert(input_P == 4);
+        }   
+        else if(type == 'K')
+        {
+            int input_K = scanf("%lf %lf %lf", &papers[i].x1, &papers[i].y1, &papers[i].r);
+            assert(input_K == 3);
+        }
+        else
+        {
+            int input_F = scanf("%d %lf %lf %lf %lf", &papers[i].id, &papers[i].x1, &papers[i].y1, &papers[i].x2, &papers[i].y2);
+            assert(input_F == 5);
+            papers[i].id -= 1;
+        }
+        papers[i].type = type;
     }
 }
 
 int main()
 {
     int n, q;
-    if(scanf("%d %d", &n, &q) != 2)
-    {
-        printf("Error! Wrong inupt values: n, q\n");
-        exit(1);
-    }
-    papers = malloc((size_t)n * sizeof(paper));
-    if(papers == NULL)
-    {
-        printf("Error! Wrong memory allocation.\n");
-        exit(0);
-    }
-    for(int i=0;i<n;i++)
-    {
-        char type;
-        if(scanf(" %c", &type) != 1)
-        {
-            printf("Error! Wrong input values: type\n");
-            exit(0);
-        }
-        if(type == 'P')
-        {
-            if(scanf("%lf %lf %lf %lf", &papers[i].x1, &papers[i].y1, &papers[i].x2, &papers[i].y2) != 4)
-            {
-                printf("Error! Wrong input values: x1, y1, x2, y2 (rectangle)\n");
-                exit(0);
-            }
-        }   
-        else if(type == 'K')
-        {
-            if(scanf("%lf %lf %lf", &papers[i].x1, &papers[i].y1, &papers[i].r) != 3)
-            {
-                printf("Error! Wrong input values: x1, y1, r (circle)\n");
-                exit(0);
-            }
-        }
-        else
-        {
-            if(scanf("%d %lf %lf %lf %lf", &papers[i].id, &papers[i].x1, &papers[i].y1, &papers[i].x2, &papers[i].y2) != 5)
-            {
-                printf("Error! Wrong input values: id, x1, y1, x2, y2 (folding)\n");
-                exit(0);
-            }
-            papers[i].id -= 1;
-        }
-        papers[i].type = type;
-    }
+    int input_init = scanf("%d %d", &n, &q);
+    assert(input_init == 2);
+    /* Array that represents all sheets of paper. */
+    paper *papers = (paper *)malloc((size_t)n * sizeof(paper));
+    assert(papers != NULL);
+    get_input(papers, n);
     for(int i=0;i<q;i++)
     {
         int id;
         double x, y;
-        if(scanf("%d %lf %lf", &id, &x, &y) != 3)
-        {
-            printf("Error! Wrong input values: id, x, y (query)\n");
-            exit(0);
-        }
-        printf("%lld\n", solve(id - 1, x, y));
+        int input_query = scanf("%d %lf %lf", &id, &x, &y);
+        assert(input_query == 3);
+        printf("%lld\n", solve(papers, id - 1, x, y));
     }
     free(papers);
     return 0;
