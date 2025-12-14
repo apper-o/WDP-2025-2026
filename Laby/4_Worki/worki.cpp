@@ -1,8 +1,6 @@
 #include "worki.h"
 #include <assert.h>
-#include <vector>
 #include <algorithm>
-#include <iostream>
 
 using namespace std;
 
