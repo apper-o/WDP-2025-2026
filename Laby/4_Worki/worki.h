@@ -8,7 +8,6 @@ struct przedmiot;
 struct grupa
 {
     worek* wlasciciel;
-    int rozmiar;
     grupa* nastepny;
 };
 
