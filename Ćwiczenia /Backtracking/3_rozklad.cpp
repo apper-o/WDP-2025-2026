@@ -8,9 +8,7 @@ bool prime(long long n)
 {
     if(n < 2)
         return false;
-    if(n == 2)
-        return true;
-    for(int i=3;i*i<=n;i+=2)
+    for(int i=2;i*i<=n;i++)
         if(n % i == 0)
             return false;
     return true;
@@ -21,7 +19,7 @@ pair<long long, long long> solve(long long n)
     if(prime(n))
         return {n, 0};
     if(n % 2 == 0)
-        for(int i=3;i<=n/2;i++)
+        for(int i=2;i<=n/2;i++)
             if(prime(i) && prime(n-i))
                 return {i, n-i};
     return solve(n-3);
