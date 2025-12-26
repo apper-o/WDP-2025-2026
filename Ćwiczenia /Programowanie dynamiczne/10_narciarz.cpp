@@ -25,6 +25,7 @@ int autobus(int n, int m, const vector<vector<int>> &arr)
     while(q.size())
     {
         auto [x, y] = q.front();
+        q.pop();
         if(x == m && y == n)
         {
             res = max(res, dp[y][x]);
@@ -35,7 +36,7 @@ int autobus(int n, int m, const vector<vector<int>> &arr)
             int xp = x + dx;
             int yp = y + dy;
             int val = max(dp[y][x], abs(yp - xp));
-            if(valid(yp, xp, n, m) && arr[y][x] >= arr[yp][xp] && dp[yp][xp] < val)
+            if(valid(yp, xp, n, m) && arr[y][x] > arr[yp][xp] && dp[yp][xp] < val)
             {
                 dp[yp][xp] = val;
                 q.push({xp, yp});
