@@ -25,24 +25,18 @@ vector<int> represent(int n)
     vector<int> res;
     int sum = 0;
     int it = 1;
-    while(sum < n)
+    while(n - sum - it > it)
     {
-        sum+=it;
-        it+=2;
+        sum += it;
+        res.push_back(it);
+        it += 2;
     }
-    int diff = sum - n;
-    if(diff % 2 == 1)
+    if((n - sum) % 2 == 0)
     {
-        for(int i=1;i<it;i+=2)
-            if(i != diff)
-                res.push_back(i);
+        sum -= res.back();
+        res.pop_back();
     }
-    else
-    {
-        for(int i=(diff == 0 ? 1 : 3);i<it;i+=2)
-            if(i != diff - 1)
-                res.push_back(i);
-    }
+    res.push_back(n - sum);
     return res;
 }
 
