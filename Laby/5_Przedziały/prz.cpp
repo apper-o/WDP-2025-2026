@@ -4,17 +4,20 @@
 #include <assert.h>
 using namespace std;
 
+// Structure to store element information: original index and Y-value
 struct element
 {
     int id, value;
 };
 
+// Structure to represent an interval [a, b] and its score
 struct interval
 {
     int a, b;
     double score;
 };
 
+// Updates the deques with a new element x. Deque mn (min) is increasing and deque mx (max) is decreasing
 void update(element x, deque<element> &mn, deque<element> &mx)
 {
     while(mn.size() && mn.back().value >= x.value)
@@ -25,12 +28,14 @@ void update(element x, deque<element> &mn, deque<element> &mx)
     mx.push_back(x);
 }
 
+// Calculates squarred score for a given interval
 double get_score(int x1, int x2, int diff)
 {
     return (double)(x1 - x2) * (x1 - x2) / diff;
 }
 
-bool valid(int new_y, const deque<element> &dq_mn, const deque<element> &dq_mx, int U)
+// Checks whether adding new_y satisfies requirements
+bool valid(int new_y, const deque<element> &dq_mn, const deque<element> &dq_mx, long long U)
 {
     if(dq_mn.empty())
         return true;
@@ -39,30 +44,41 @@ bool valid(int new_y, const deque<element> &dq_mn, const deque<element> &dq_mx, 
     return abs(max(mx, new_y) - min(mn, new_y)) <= U;
 }
 
+
 vector<pair<int, int>> solve(int n, long long U, const vector<int> &X, const vector<int> &Y)
 {
-    deque<element> mx, mn;
-    deque<interval> dq;
-    vector<pair<int, int>> res;
+    deque<element> mx, mn; // Monotonic deques for interval [a, b]
+    deque<interval> dq; // Deque that stores the best candidate sorted by score
+    vector<pair<int, int>> res; 
+
+    // a is the current index, b is the right pointer
     for(int a=0,b=0;a<n;a++)
     {
         int prev_b = b; 
+
+        // Extends the b pointer as far as possible
         while(b < n && valid(Y[b], mn, mx, U))
         {
             update({b, Y[b]}, mn, mx);
             b++;
         }
-        if(prev_b != b) // sprawdzam czy przedział jest maksymalny
+
+        // If the interval expanded then the interval is maximal. Otherwise it should be skipped as it is not maximal
+        if(prev_b != b)
         {
+            // Removes intervals with lower score
             double score = get_score(X[a], X[b-1], b-a); 
             while(dq.size() && dq.back().score < score)
                 dq.pop_back();
-            dq.push_back((interval){a, b-1, score});
+            dq.push_back({a, b-1, score});
         }
+
+        // Removes 'a' from deques
         if(mn.size() && mn.front().id == a)
             mn.pop_front();
         if(mx.size() && mx.front().id == a)
             mx.pop_front();
+        // Saves result and removes the interval from dq if it ends in 'a'
         res.push_back({dq.front().a+1, dq.front().b+1});
         if(dq.size() && dq.front().b == a)
             dq.pop_front();
