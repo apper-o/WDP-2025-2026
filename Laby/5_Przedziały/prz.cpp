@@ -44,7 +44,6 @@ bool valid(int new_y, const deque<element> &dq_mn, const deque<element> &dq_mx, 
     return abs(max(mx, new_y) - min(mn, new_y)) <= U;
 }
 
-
 vector<pair<int, int>> solve(int n, long long U, const vector<int> &X, const vector<int> &Y)
 {
     deque<element> mx, mn; // Monotonic deques for interval [a, b]
@@ -55,14 +54,12 @@ vector<pair<int, int>> solve(int n, long long U, const vector<int> &X, const vec
     for(int a=0,b=0;a<n;a++)
     {
         int prev_b = b; 
-
         // Extends the b pointer as far as possible
         while(b < n && valid(Y[b], mn, mx, U))
         {
             update({b, Y[b]}, mn, mx);
             b++;
         }
-
         // If the interval expanded then the interval is maximal. Otherwise it should be skipped as it is not maximal
         if(prev_b != b)
         {
@@ -72,7 +69,6 @@ vector<pair<int, int>> solve(int n, long long U, const vector<int> &X, const vec
                 dq.pop_back();
             dq.push_back({a, b-1, score});
         }
-
         // Removes 'a' from deques
         if(mn.size() && mn.front().id == a)
             mn.pop_front();
