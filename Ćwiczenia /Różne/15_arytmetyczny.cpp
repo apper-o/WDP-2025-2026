@@ -21,7 +21,7 @@ int solve(int n, const vector<int> &arr)
         {
             int diff = arr[j] - arr[i];
             int val = (dp[i].count(diff) ? dp[i][diff] + 1 : 2);
-            dp[j][diff] = val;
+            dp[j][diff] = max(dp[j][diff], val);
             res = max(res, val);
         }
     }
