@@ -61,7 +61,7 @@ void collect(bin_tree t, set<int> &primes)
         if(x > 1)
             primes.insert(x);
     }
-    else
+    else if(t->val < 0)
     {
         collect(t->left, primes);
         collect(t->right, primes);
