@@ -18,6 +18,7 @@ vector<int> get_fib(int x)
             x -= f[i];
         }
     }
+    reverse(res.begin(), res.end());
     return res;
 }
 
@@ -26,7 +27,7 @@ int rozklady(int x)
     vector<int> d = get_fib(x);
     int v0 = 1; // ostatnia rozbita
     int v1 = (d[0] - 1) / 2; // ostatnia nierozbita
-    for(int i=0;i<d.size();i++)
+    for(int i=1;i<d.size();i++)
     {
         int new_v0 = v0 + v1;
         int new_v1 = v0 * (d[i] - d[i-1]) / 2 + v1 * (d[i] - d[i-1] + 1) / 2;
