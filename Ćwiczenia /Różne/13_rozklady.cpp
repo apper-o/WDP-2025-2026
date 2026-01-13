@@ -1,36 +1,42 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <assert.h>
-#include <map>
-#include <set>
-#include <queue>
-#include <stack>
+#include <bits/stdc++.h>
 using namespace std;
 
 const int INF = 1e9;
+const int MOD = 1e9 + 7;
 
-int solve(int n)
+vector<int> get_fib(int x)
 {
-    vector<int> dp(n+1);
-    dp[0] = 1;
-    int a = 1, b = 1;
-    while(b <= n)
+    vector<int> f = {1, 2};
+    while(f.back() < x)
+        f.push_back(f[f.size()-2] + f[f.size()-1]);
+    vector<int> res;
+    for(int i=f.size()-1;i>=0;i--)
     {
-        for(int i=n;i>=b;i--)
-            dp[i] += dp[i - b];
-        int tmp = a;
-        a = b;
-        b += tmp;
+        if(x >= f[i])
+        {
+            res.push_back(i + 1);
+            x -= f[i];
+        }
     }
-    return dp[n];
+    return res;
 }
 
-int main()
+int rozklady(int x)
 {
-    int n;
-    cin>>n;
-    auto res = solve(n);
-    cout<<res<<"\n";
+    vector<int> d = get_fib(x);
+    int v0 = 1; // ostatnia rozbita
+    int v1 = (d[0] - 1) / 2; // ostatnia nierozbita
+    for(int i=0;i<d.size();i++)
+    {
+        int new_v0 = v0 + v1;
+        int new_v1 = v0 * (d[i] - d[i-1]) / 2 + v1 * (d[i] - d[i-1] + 1) / 2;
+        v0 = new_v0;
+        v1 = new_v1;
+    }
+    return v0 + v1;
+}
+
+int main() 
+{
     return 0;
 }
