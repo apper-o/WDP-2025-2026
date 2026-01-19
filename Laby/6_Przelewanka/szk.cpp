@@ -41,7 +41,7 @@ using visited_set = unordered_set<vector<int>, vector_hash>;
 // Tries to pour water from i-th glass to every possible glass different than i
 void pour(int i, vector<int> &v, int moves, queue<node> &q, visited_set &vis, const vector<int> &capacity)
 {
-    int n = v.size();
+    int n = (int)v.size();
     for(int j=0;j<n;j++)
     {
         if(j != i)
@@ -71,7 +71,6 @@ void empty_glass(int i, vector<int> &v, int moves, queue<node> &q, visited_set &
     // A glass can only be emptied if it is not already empty 
     if(v[i] > 0)
     {
-        int n = v.size();
         // Temporary variable to retrieve v vector
         int tmp = v[i];
         v[i] = 0;
@@ -111,7 +110,7 @@ int gcd(int a, int b)
 // Checks if it ispossible to get the desired output
 bool not_possible(const vector<int> &capacity, const vector<int> &target)
 {
-    int n = capacity.size();
+    int n = (int)capacity.size();
     int g = 0;
     bool non_zero_or_full = 0;
     for(int i=0;i<n;i++)
