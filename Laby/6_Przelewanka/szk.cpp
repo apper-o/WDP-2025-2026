@@ -113,9 +113,15 @@ bool not_possible(const vector<int> &capacity, const vector<int> &target)
 {
     int n = capacity.size();
     int g = 0;
+    bool non_zero_or_full = 0;
     for(int i=0;i<n;i++)
+    {
         if(capacity[i] > 0)
             g = gcd(g, capacity[i]);
+        non_zero_or_full |= (capacity[i] > 0 || capacity[i] == target[i]);
+    }
+    if(!non_zero_or_full)
+        return -1;
     // If gcd doesn't divide target[i] than it is impossible to get the desired output
     if(g == 0)
     {
@@ -171,6 +177,8 @@ int main()
     {
         cin>>capacity[i]>>target[i];
         assert(capacity[i] >= target[i]);
+        assert(target[i] >= 0);
+        assert(capacity[i] >= 0);
     }
     auto res = solve(n, capacity, target);
     cout<<res<<"\n";
