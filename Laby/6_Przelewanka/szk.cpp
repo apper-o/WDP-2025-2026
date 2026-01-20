@@ -7,39 +7,26 @@
 #include <chrono>
 using namespace std;
 
+const int MOD = 1e9 + 7;
+
 struct node
 {
     vector<int> v;
     int moves;
 };
 
-// Custom hasing function
-struct vector_hash 
+// Returns a hash of a vector
+long long encode(const vector<int> &v, const vector<int> &pw)
 {
-    // https://codeforces.com/blog/entry/62393
-    static uint64_t splitmix64(uint64_t x) 
-    {
-        x += 0x9e3779b97f4a7c15; // Weil's constant 2^64 / \phi
-        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
-        x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
-        return x ^ (x >> 31);
-    }
-    // https://stackoverflow.com/questions/4948780/magic-number-in-boosthash-combine
-    size_t operator()(const vector<int>& v) const 
-    {
-        // static const for future use
-        static const uint64_t FIXED_RANDOM = chrono::steady_clock::now().time_since_epoch().count();
-        uint64_t hash = 0;
-        for (int val : v)
-            hash ^= splitmix64(val + FIXED_RANDOM + 0x9e3779b9 + (hash << 6) + (hash >> 2));
-        return hash;
-    }
-};
-
-using visited_set = unordered_set<vector<int>, vector_hash>;
+    long long hsh = 0;
+    int n = int(v.size());
+    for(int i=0;i<n;i++)
+        hsh = (hsh + v[i] * pw[i]) % MOD;
+    return hsh;
+}
 
 // Tries to pour water from i-th glass to every possible glass different than i
-void pour(int i, vector<int> &v, int moves, queue<node> &q, visited_set &vis, const vector<int> &capacity)
+void pour(int i, vector<int> &v, int moves, queue<node> &q, unordered_set<int> &vis, const vector<int> &capacity, const vector<int> &pw)
 {
     int n = (int)v.size();
     for(int j=0;j<n;j++)
@@ -53,9 +40,10 @@ void pour(int i, vector<int> &v, int moves, queue<node> &q, visited_set &vis, co
                 // Subtracting and adding to_pour so that it is easier to retrieve v 
                 v[i] -= to_pour;
                 v[j] += to_pour;
-                if(!vis.count(v))
+                long long hsh = encode(v, pw);
+                if(!vis.count(hsh))
                 {
-                    vis.insert(v);
+                    vis.insert(hsh);
                     q.push({v, moves + 1});
                 }
                 v[i] += to_pour;
@@ -66,7 +54,7 @@ void pour(int i, vector<int> &v, int moves, queue<node> &q, visited_set &vis, co
 }
 
 // Empties the i-th glass 
-void empty_glass(int i, vector<int> &v, int moves, queue<node> &q, visited_set &vis)
+void empty_glass(int i, vector<int> &v, int moves, queue<node> &q, unordered_set<int> &vis, const vector<int> &pw)
 {
     // A glass can only be emptied if it is not already empty 
     if(v[i] > 0)
@@ -74,9 +62,10 @@ void empty_glass(int i, vector<int> &v, int moves, queue<node> &q, visited_set &
         // Temporary variable to retrieve v vector
         int tmp = v[i];
         v[i] = 0;
-        if(!vis.count(v))
+        long long hsh = encode(v, pw);
+        if(!vis.count(hsh))
         {
-            vis.insert(v);
+            vis.insert(hsh);
             q.push({v, moves + 1});
         }
         v[i] = tmp;
@@ -84,17 +73,18 @@ void empty_glass(int i, vector<int> &v, int moves, queue<node> &q, visited_set &
 }
 
 // Fills the i-th glass to the maximum capacity
-void fill_glass(int i, vector<int> &v, int moves, queue<node> &q, visited_set &vis, const vector<int> &capacity)
+void fill_glass(int i, vector<int> &v, int moves, queue<node> &q, unordered_set<int> &vis, const vector<int> &capacity, const vector<int> &pw)
 {
     // A glass can only be filled if it is not already full
-    if(v[i] != capacity[i])
+    if(v[i] != capacity[i] && v[i] == 0)
     {
         // Temporary variable to retrieve v vector
         int tmp = v[i];
         v[i] = capacity[i];
-        if(!vis.count(v))
+        long long hsh = encode(v, pw);
+        if(!vis.count(hsh))
         {
-            vis.insert(v);
+            vis.insert(hsh);
             q.push({v, moves + 1});
         }
         v[i] = tmp;
@@ -108,7 +98,7 @@ int gcd(int a, int b)
 }
 
 // Checks if it ispossible to get the desired output
-bool not_possible(const vector<int> &capacity, const vector<int> &target)
+bool not_possible(vector<int> &capacity, vector<int> &target)
 {
     int n = (int)capacity.size();
     int g = 0;
@@ -131,23 +121,39 @@ bool not_possible(const vector<int> &capacity, const vector<int> &target)
     else
     {
         for(int i=0;i<n;i++)
+        {
             if(target[i] % g > 0)
                 return 1;
+            // Optimalization
+            target[i] /= g;
+            capacity[i] /= g;
+        }
     }
     return 0;
 }
 
 // Function solves the task using BFS to find the shortest path in a state graph
 // Returns minimal number of moves or -1 if no solution was found
-int solve(int n, const vector<int> &capacity, const vector<int> &target)
+int solve(int n, vector<int> &capacity, vector<int> &target)
 {
     if(not_possible(capacity, target))
         return -1;
+    // Calculates maximum capacity for hashes
+    int mx = 0;
+    for(int i=0;i<n;i++)
+        mx = max(mx, capacity[i]);
+    mx++;
+    // Powers for polynominal hashes
+    vector<int> pw(n+1);
+    pw[0] = 1;
+    for(int i=1;i<n;i++)
+        pw[i] = ((long long)pw[i-1] * mx) % MOD;
+
     queue<node> q;
     // Initial state: all glasses are empty (0)
     q.push({vector<int>(n), 0});
-    visited_set vis;
-    vis.insert(vector<int>(n));
+    unordered_set<int> vis;
+    vis.insert(encode(vector<int>(n), pw));
     while(q.size())
     {
         auto [v, moves] = q.front();
@@ -158,9 +164,9 @@ int solve(int n, const vector<int> &capacity, const vector<int> &target)
         // Tries all 3 operations for every possible glass
         for(int i=0;i<n;i++)
         {
-            pour(i, v, moves, q, vis, capacity);
-            empty_glass(i, v, moves, q, vis);
-            fill_glass(i, v, moves, q, vis, capacity);
+            pour(i, v, moves, q, vis, capacity, pw);
+            empty_glass(i, v, moves, q, vis, pw);
+            fill_glass(i, v, moves, q, vis, capacity, pw);
         }
     }
     return -1;
